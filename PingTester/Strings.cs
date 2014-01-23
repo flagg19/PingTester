@@ -8,10 +8,10 @@ namespace PingTester
 {
     public static class Strings
     {
-        public const string ImportWarningMessage = "Gli eventuali dati non salvati raccolti dall'applicazione saranno sovrascritti con quelli importati, continuare?";
-        public const string ChartError = "Non c'è ancora alcun dato da graficare.";
-        public const string GenericWarningTitle = "Attenzione!";
-        public const string ExportError = "Non c'è ancora alcun dato da esportare!";
-        public const string LifeCycleExitError = "Stoppa l'esecuzione prima di chiudere l'applicazione. (rima).";
+        public const string ImportWarningMessage = "Current data will be overwritten by file data, continue?";
+        public const string ChartError = "No data to be charted yet.";
+        public const string GenericWarningTitle = "Warning!";
+        public const string ExportError = "No data to be exported yet.";
+        public const string LifeCycleExitError = "Stop execution before closing the application.";
     }
 }

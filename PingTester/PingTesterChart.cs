@@ -23,11 +23,11 @@ namespace PingTester
 
         private void PingTesterChart_Load(object sender, EventArgs e)
         {
-            // Per ogni risultato la cui media o data non sia nulla
+            // For each (meaningful) result, add it to the chart
             foreach (PingResult res in results.Where(x => x.getAvg() != null && x.getAvgTime() != null && x.getDev() != null))
             {
-                crtResults.Series["Media"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getAvg());
-                crtResults.Series["DevStandard"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getDev());
+                crtResults.Series["Average"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getAvg());
+                crtResults.Series["StandardDeviation"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getDev());
             }
         }
 

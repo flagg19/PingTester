@@ -16,7 +16,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 namespace PingTester
 {
-    // Vari di esecuzione corrispondenti a una precisa configurazione di componenti grafici abilitati o meno
+    // All possible execution states, corresponding to a precise GUI state 
     enum PingTesterGUIStatus
     {
         AfterLaunch,
@@ -26,7 +26,7 @@ namespace PingTester
 
     public partial class PingTester : Form
     {
-        // Parametri vari da passare alla classe PingHelper
+        // PingHelper related params
         IPAddress remoteAddr;
         int timeout;
         int count;
@@ -34,13 +34,13 @@ namespace PingTester
         int secondsBetweenPings;
         int secondsBetweenTests;
 
-        // Variabili locali di questa classe
+        // Form and ping results related vars
         PingHelper ph;
         List<PingResult> results;
         object resultsLock;
         PingTesterGUIStatus status;
 
-        // Variabili relative al timer
+        // Timer related vars
         object timerLock;
         ManualResetEvent timerDead;
         System.Timers.Timer timer;
@@ -56,6 +56,7 @@ namespace PingTester
             AdjustGUIToStatus(PingTesterGUIStatus.AfterLaunch);
         }
 
+        // Takes care of the GUI, given the execution state
         void AdjustGUIToStatus(PingTesterGUIStatus status)
         {
             this.status = status;
@@ -85,7 +86,26 @@ namespace PingTester
             }
         }
 
-        #region roba relativa al timer
+        #region Timer related code
+
+        /* StopTimer() & timer_Elapsed(..) weird things are needed to be absolutly sure
+         * that after the call to StopTimer() returns, the timer is stopped  and
+         * its event it's not executing even if its event was executing or was sheduled
+         * to be executed soon.
+         * */
+
+        private void StopTimer()
+        {
+            lock (timerLock)
+            {
+                /* Set the state of the wait handle so if the timer's delegate is executing
+                 * (but waiting at the lock) causing the following Stop to have no effect,
+                 * at unlock it will return without doing anything.
+                 * */
+                timerDead.Set();
+                timer.Stop();
+            }
+        }
 
         void timer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -111,24 +131,11 @@ namespace PingTester
             }
         }
 
-        private void StopTimer()
-        {
-            lock (timerLock)
-            {
-                /* Set the state of the wait handle so if the timer's delegate is executing
-                 * (but waiting at the lock) causing the following Stop to have no effect,
-                 * at unlock it will return without doing anything.
-                 * */
-                timerDead.Set();
-                timer.Stop();
-            }
-        }
-
         #endregion
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            // Parso i parametri
+            // Parsing parameters
             remoteAddr = IPAddress.Parse(txtAddress.Text);
             timeout = Int32.Parse(txtTimeout.Text);
             count = Int32.Parse(txtPingPerTest.Text);
@@ -136,11 +143,11 @@ namespace PingTester
             secondsBetweenPings = Int32.Parse(txtSecondsBetweenPings.Text);
             secondsBetweenTests = Int32.Parse(txtSecondsBetweenTests.Text) * 1000;
 
-            // Creo l'oggetto che mi permette di fare i test
+            // Creating the helper object
             ph = new PingHelper(remoteAddr, timeout, count, maxNetworkInterfaceUsagePercentage, secondsBetweenPings);
             results = new List<PingResult>();
 
-            // Creo e setto il timer che eseguirà i test ogni tot tempo
+            // Create and setup the timer that will start the test every *user given* time
             timerDead.Reset();
             timer = new System.Timers.Timer();
             timer.AutoReset = false;
@@ -148,36 +155,34 @@ namespace PingTester
             timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
             //timer.Start();
             /*
-             * Workaroud per aggirare il problema che il timer aspetta tutto il periodo dopo lo start per sparare la prima volta
-             * Potrei chiamare il suo handler (orrida cosa comunque) come un metodo normale ma poi ci sarebbero casini coi lock
-             * perché eseguirebbe sul main thread. Allora mi tocca avviare la prima volta l'handler su un task a parte simulando
-             * la situazione che avrei se fosse stato il timer a "sparare".
+             * Workaround the problem that i need the event to be first fired as soon as i start the timer, not after its first
+             * period. But calling its event from the main thread it's not possible due to the locking problem that may occur
+             * if the user tries stops the execution during the first test session. 
+             * To simulate the situation that we will have during all but the first test session, i call the timer_Elapsed(..)
+             * event in a new thread. Performance is not the focus of this app, correctness is.
              */
             Task.Factory.StartNew(() =>
             {
                 timer_Elapsed(this, null);
             });
 
-
-            // Disabilito componenti grafici con cui non si deve poter interagire mentre il programma è in funzione
             AdjustGUIToStatus(PingTesterGUIStatus.AfterStart);
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            // Imposto la grafica "spegnimento" in modo che l'utente non possa toccare nulla finché non sono certo che è tutto a posto
+            // Setting the GUI to "don't touch anything please, i'm stopping"
             AdjustGUIToStatus(PingTesterGUIStatus.AfterStop);
 
-            // Eseguo quanto segue in un nuovo thread per non bloccare la GUI
+            // Executing potentially blocking operation in a new thread to prevent GUI freez
             Task.Factory.StartNew(() =>
             {
-                // Fermo il timer, se sta eseguendo proprio in questo momento questa chiamata è bloccante e ritorna appena il timer ha finito
+                // Stopping timer, if it's event is executing the call blocks me untill it ends
                 StopTimer();
 
-                // Invoco il l'aggiornamento della grafica sul thread della GUI
+                // We should update the GUI but we are not the GUI thread so we need to invoke
                 MethodInvoker del = () =>
                 {
-                    // Ripristino la situazione grafiga iniziale
                     ((PingTester)grpInputs.FindForm()).AdjustGUIToStatus(PingTesterGUIStatus.AfterLaunch);
                 };
                 grpInputs.BeginInvoke(del);
@@ -186,7 +191,7 @@ namespace PingTester
 
         private void btnChart_Click(object sender, EventArgs e)
         {
-            // Creo una copia della struttura della lista così da potervi accedere dall'altra form senza problemi di concorrenza
+            // Create a copi of the structure of the result list to be passed to the chart form
             List<PingResult> toBeCharted;
             lock (resultsLock)
             {
@@ -194,7 +199,7 @@ namespace PingTester
                 {
                     toBeCharted = new List<PingResult>(results);
 
-                    // Apro la form con i dati raccolti fin ora
+                    // Opening the chart form
                     PingTesterChart chartForm = new PingTesterChart(toBeCharted);
                     chartForm.Show();
                 }
@@ -207,14 +212,14 @@ namespace PingTester
 
         private void btnImport_Click(object sender, EventArgs e)
         {
-            // Chiedo conferma all'utente perché sovrascriverà i dati in memoria
+            // Asking user confirmation (actual data will be overwitten by file data)
             DialogResult dialogResult = MessageBox.Show(Strings.ImportWarningMessage, Strings.GenericWarningTitle, MessageBoxButtons.YesNo);
             if (dialogResult == DialogResult.Yes)
             {
                 OpenFileDialog dialog = new OpenFileDialog();
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    // Deserializzo il file
+                    // Deserialization 
                     FileStream stream = File.OpenRead(dialog.FileName);
                     BinaryFormatter formatter = new BinaryFormatter();
                     results = (List<PingResult>)formatter.Deserialize(stream);
@@ -223,20 +228,20 @@ namespace PingTester
             }
             else if (dialogResult == DialogResult.No)
             {
-                //do something else
+                //do something else, nothing ATM
             }
         }
 
         private void btnExport_Click(object sender, EventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog();
-            // Nome del file suggerito
+            // Suggesting file name based on time
             dialog.FileName = DateTime.Now.ToString("d.M.yyyy-HH.mm.ss") + ".bin";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 if (results != null && results.Count() > 0)
                 {
-                    // Serializzo...
+                    // Serializzation
                     FileStream stream = File.Create(dialog.FileName);
                     BinaryFormatter formatter = new BinaryFormatter();
                     formatter.Serialize(stream, results);
@@ -249,7 +254,7 @@ namespace PingTester
             }
         }
 
-        #region gestione chiusura e ridimensionamento form
+        #region form close and resize code
 
         private void PingTester_FormClosing(object sender, FormClosingEventArgs e)
         {

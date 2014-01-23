@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PingService
 {
-    // Vari stati che può assumere la risposta di ping in questo contesto
+    // All possible things that may happend when testing
     public enum PingResultEntryStatus {
         Success,
         GenericFailureSeeReplyStatus,
@@ -17,7 +17,7 @@ namespace PingService
         ExceptionRaisedDuringPing
     };
 
-    // Classe wrapper attorno alla PingReply del framework, amplia la possibilità di specificare uno Stato alla risposta
+    // Serializable class representing a single ping result (like doing "ping host -n 1")
     [Serializable]
     public class PingResultEntry : ISerializable
     {
@@ -53,7 +53,7 @@ namespace PingService
         }
     }
 
-    // Classe contenitore per un numero arbitrario di risultati di Ping considerando come risultato l'equivalente di "ping host -n 1"
+    // Serializable class representing a group of single ping results, call it a "SessionResult" if you like
     [Serializable]
     public class PingResult
     {
@@ -83,9 +83,9 @@ namespace PingService
 
         public void addPingResultEntry(PingResultEntry newEntry)
         {
-            // Aggiungo il nuovo risultato
+            // Adding a new entry
             results.Add(newEntry);
-            // Resetto le statistiche in caso fossero state già calcolate
+            // Reset any previously calculated stats (they where probably already null but who knows...)
             avg = null;
             dev = null;
             max = null;
@@ -95,7 +95,7 @@ namespace PingService
 
         public double? getAvg()
         {
-            // Se non è ancora stato calcolato lo calcolo
+            // Calculating avg if not yet calculated
             if (avg == null && results.Count() > 0)
             {
                 avg = new double?(0);
@@ -115,7 +115,7 @@ namespace PingService
 
         public double? getDev()
         {
-            // Se non è ancora stato calcolato lo calcolo
+            // Calculating dev if not yet calculated
             if (dev == null && results.Count() > 0)
             {
                 double? tmpAvg = this.getAvg();
@@ -140,7 +140,7 @@ namespace PingService
 
         public double? getMax()
         {
-            // Se non è ancora stato calcolato lo calcolo
+            // Calculating max if not yet calculated
             if (max == null && results.Count() > 0)
             {
                 max = results.Where(x => x.Status == PingResultEntryStatus.Success).OrderBy(y => y.Rtt).Last().Rtt;
@@ -150,7 +150,7 @@ namespace PingService
 
         public double? getMin()
         {
-            // Se non è ancora stato calcolato lo calcolo
+            // Calculating min if not yet calculated
             if (min == null && results.Count() > 0)
             {
                 min = results.Where(x => x.Status == PingResultEntryStatus.Success).OrderBy(y => y.Rtt).First().Rtt;
@@ -160,7 +160,7 @@ namespace PingService
 
         public DateTime? getAvgTime()
         {
-            // Se non è ancora stato calcolato lo calcolo
+            // Calculating avgTime if not yet calculated
             if (avgTime == null && results.Count() > 0)
             {
                 avgTime = new DateTime((results.First().Time.Ticks + results.Last().Time.Ticks) / 2);

@@ -56,10 +56,10 @@
             this.crtResults.Padding = new System.Windows.Forms.Padding(5);
             series1.ChartArea = "AvgDevChartArea";
             series1.Legend = "Legend1";
-            series1.Name = "Media";
+            series1.Name = "Average";
             series2.ChartArea = "AvgDevChartArea";
             series2.Legend = "Legend1";
-            series2.Name = "DevStandard";
+            series2.Name = "StandardDeviation";
             this.crtResults.Series.Add(series1);
             this.crtResults.Series.Add(series2);
             this.crtResults.Size = new System.Drawing.Size(900, 484);
