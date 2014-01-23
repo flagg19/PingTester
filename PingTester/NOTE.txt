@@ -1,5 +1,5 @@
-﻿Ammesso e non concesso che il giro di thread vada bene, restano da fare:
+﻿TODO
 
-2) aggiungere la possibilità di skippare i successivi ping di una run di test in caso di stop dell'utente
-4) vedere cosa succede e gestire di conseguenza gli eventi di sistema quali standby e compagnia
-5) profit
+- improve test stoppability (avoid doing all remaining pings scheduled for a test if the user press stop)
+- check what happend when the system goes standby
+- ...
