@@ -218,9 +218,8 @@
             // ntfPingTesterTray
             // 
             this.ntfPingTesterTray.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.ntfPingTesterTray.BalloonTipText = "PingTester ancora in esecuzione.\r\nDoppio click su questa icona per ripristinare l" +
-    "a finestra.";
-            this.ntfPingTesterTray.BalloonTipTitle = "Attenzione!";
+            this.ntfPingTesterTray.BalloonTipText = "PingTester is still runnig in background.";
+            this.ntfPingTesterTray.BalloonTipTitle = "Look here please!";
             this.ntfPingTesterTray.Icon = ((System.Drawing.Icon)(resources.GetObject("ntfPingTesterTray.Icon")));
             this.ntfPingTesterTray.Text = "PingTesterTray";
             this.ntfPingTesterTray.Visible = true;
