@@ -5,7 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PingTester", "PingTester\Pi
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{70D74312-FDAD-439B-BDDE-AC12371DF14D}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\..\..\Download\ping.ico = ..\..\..\..\Download\ping.ico
+		PingTester\resources\ping32.ico = PingTester\resources\ping32.ico
+		PingTester\resources\ping48.ico = PingTester\resources\ping48.ico
 	EndProjectSection
 EndProject
 Global
