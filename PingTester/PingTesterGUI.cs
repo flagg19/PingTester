@@ -143,7 +143,7 @@ namespace PingTester
         {
             // Parsing parameters
             
-            //Validating/resolving Ip Address
+            // Validating/resolving Ip Address
             if(!IPAddress.TryParse(txtAddress.Text,out remoteAddr))
             {
                 try
@@ -152,7 +152,7 @@ namespace PingTester
                 }
                 catch (Exception)
                 {
-                    MessageBox.Show(Strings.InvalidTargetHost);
+                    MessageBox.Show(Strings.ParseParameterHostError);
                     return;
                 }
             }

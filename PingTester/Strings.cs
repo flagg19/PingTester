@@ -17,6 +17,6 @@ namespace PingTester
         public const string ChartError = "No data to be charted yet.";
         public const string GenericWarningTitle = "Warning!";
         public const string ExportError = "No data to be exported yet.";
-        public const string InvalidTargetHost = "Invalid hostname";
+        public const string ParseParameterHostError = "Invalid hostname";
     }
 }
