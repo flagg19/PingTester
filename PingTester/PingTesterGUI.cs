@@ -66,22 +66,28 @@ namespace PingTester
                     grpInputs.Enabled = true;
                     btnStop.Enabled = false;
                     btnStart.Enabled = true;
+                    btnChart.Enabled = true;
                     btnImport.Enabled = true;
                     btnExport.Enabled = true;
+                    this.Text = Strings.LifeCycleFormNotRunning;
                     break;
                 case PingTesterGUIStatus.AfterStart: // Aka: running
                     grpInputs.Enabled = false;
                     btnStop.Enabled = true;
                     btnStart.Enabled = false;
+                    btnChart.Enabled = true;
                     btnImport.Enabled = false;
                     btnExport.Enabled = false;
+                    this.Text = Strings.LifeCycleFormRunning;
                     break;
                 case PingTesterGUIStatus.AfterStop: // Aka: stopping
                     grpInputs.Enabled = false;
                     btnStop.Enabled = false;
                     btnStart.Enabled = false;
+                    btnChart.Enabled = false;
                     btnImport.Enabled = false;
                     btnExport.Enabled = false;
+                    this.Text = Strings.LifeCycleFormStopping;
                     break;
             }
         }
