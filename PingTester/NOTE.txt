@@ -1,5 +1,4 @@
 ﻿TODO
 
-- improve test stoppability (avoid doing all remaining pings scheduled for a test if the user press stop)
-- check what happend when the system goes standby
-- ...
+- move timer logic from the form to the PingHelper class
+- divide badwith test in upload test and download test (at the moment, it's difficoult to set a good threshold for bandwith usage where upload and download are combined, for connections where upload and download are very different)
