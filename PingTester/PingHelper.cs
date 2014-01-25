@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Diagnostics;
+using System.Threading;
 
 namespace PingService
 {
@@ -35,6 +36,12 @@ namespace PingService
         PerformanceCounter dataSentCounter;
         PerformanceCounter dataReceivedCounter;
 
+        // Bool checked every ping loop, it can be set true from other thread if they want the test to stop as soon as possible
+        volatile bool isStopping;
+        
+        // Lock used to provide monitor-like accass to this class
+        object _lock;
+
         public PingHelper(IPAddress remoteAddr, int timeout, int count, int maxNetworkInterfaceUsagePercentage, int secondsBetweenPings)
         {
             this.remoteAddr = remoteAddr;
@@ -52,60 +59,92 @@ namespace PingService
                 dataSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", ni.Description);
                 dataReceivedCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", ni.Description);
             }
+
+            _lock = new object();
         }
 
         public PingResult TestPing()
         {
-            Ping pingSender = new Ping();
-            PingResult result = new PingResult();
-
-            for (int i = 0; i < count; i++)
+            lock (_lock)
             {
-                // Checking the network usage...
-                CheckNetworkUsageStatus check = checkNetworkUsage();
-                switch (check)
+                isStopping = false;
+
+                Ping pingSender = new Ping();
+                PingResult result = new PingResult();
+
+                for (int i = 0; i < count; i++)
                 {
-                    case (CheckNetworkUsageStatus.Good): // Ok, path clear, start pinging
-                        try
+                    if (isStopping == false)
+                    {
+                        // Checking the network usage...
+                        CheckNetworkUsageStatus check = checkNetworkUsage();
+                        switch (check)
                         {
-                            PingReply reply = pingSender.Send(remoteAddr, timeout);
-                            if (reply.Status == IPStatus.Success)
-                            {
-                                // All has gone well
+                            case (CheckNetworkUsageStatus.Good): // Ok, path clear, start pinging
+                                try
+                                {
+                                    PingReply reply = pingSender.Send(remoteAddr, timeout);
+                                    if (reply.Status == IPStatus.Success)
+                                    {
+                                        // All has gone well
+                                        result.addPingResultEntry(new PingResultEntry(
+                                            reply.RoundtripTime, reply.Status, PingResultEntryStatus.Success, System.DateTime.Now));
+                                    }
+                                    else
+                                    {
+                                        // Something went wrong, wrong but "expected"
+                                        result.addPingResultEntry(new PingResultEntry(
+                                            reply.RoundtripTime, reply.Status, PingResultEntryStatus.GenericFailureSeeReplyStatus, System.DateTime.Now));
+                                    }
+                                }
+                                catch
+                                {
+                                    // Something went really wrong, and we should "prepare for unexpected consequences"... oh, we did it with this catch
+                                    result.addPingResultEntry(new PingResultEntry(
+                                        null, null, PingResultEntryStatus.ExceptionRaisedDuringPing, System.DateTime.Now));
+                                }
+                                break;
+                            case CheckNetworkUsageStatus.Crowded:
+                                // Network usage was too high to give meaningful results
                                 result.addPingResultEntry(new PingResultEntry(
-                                    reply.RoundtripTime, reply.Status, PingResultEntryStatus.Success, System.DateTime.Now));
-                            }
-                            else
-                            {
-                                // Something went wrong, wrong but "expected"
+                                    null, null, PingResultEntryStatus.PingAbortedForHighNetworkUsage, System.DateTime.Now));
+                                break;
+                            case CheckNetworkUsageStatus.UnableToTest:
+                                // Something went wrong in checking the network
                                 result.addPingResultEntry(new PingResultEntry(
-                                    reply.RoundtripTime, reply.Status, PingResultEntryStatus.GenericFailureSeeReplyStatus, System.DateTime.Now));
-                            }
+                                    null, null, PingResultEntryStatus.PingAbortedUnableToGetNetworkUsage, System.DateTime.Now));
+                                break;
                         }
-                        catch
+
+                        // Checking again if anyone asked us to stop and also avoid waiting at the end of the last loop
+                        if (isStopping == false && i < count - 1)
                         {
-                            // Something went really wrong, and we should "prepare for unexpected consequences"... oh, we did it with this catch
-                            result.addPingResultEntry(new PingResultEntry(
-                                null, null, PingResultEntryStatus.ExceptionRaisedDuringPing, System.DateTime.Now));
+                            // Ok, i've done one single ping, now i should wait the time the user setted before doing it again
+                            //System.Threading.Thread.Sleep(secondsBetweenPings * 1000);
+                            Monitor.Wait(_lock, secondsBetweenPings * 1000);
                         }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
                         break;
-                    case CheckNetworkUsageStatus.Crowded:
-                        // Network usage was too high to give meaningful results
-                        result.addPingResultEntry(new PingResultEntry(
-                            null, null, PingResultEntryStatus.PingAbortedForHighNetworkUsage, System.DateTime.Now));
-                        break;
-                    case CheckNetworkUsageStatus.UnableToTest:
-                        // Something went wrong in checking the network
-                        result.addPingResultEntry(new PingResultEntry(
-                            null, null, PingResultEntryStatus.PingAbortedUnableToGetNetworkUsage, System.DateTime.Now));
-                        break;
+                    }
                 }
-
-                // Ok, i've done one single ping, now i should wait the time the user setted before doing it again
-                System.Threading.Thread.Sleep(secondsBetweenPings * 1000);
+                return result;
             }
+        }
 
-            return result;
+        // Used to stop the ping loop before it has done all scheduled loops
+        public void SkipRemainingPingsOnce()
+        {
+            lock (_lock)
+            {
+                isStopping = true;
+                Monitor.Pulse(_lock);
+            }
         }
 
         // Check if network bandwith usage % is lower (or not) then the value given by the user

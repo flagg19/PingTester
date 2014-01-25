@@ -177,6 +177,10 @@ namespace PingTester
             // Executing potentially blocking operation in a new thread to prevent GUI freez
             Task.Factory.StartNew(() =>
             {
+                // Signaling to skip any remaining scheduled pings, can block if a ping is executing
+                // Max block time is ping timeout
+                ph.SkipRemainingPingsOnce();
+
                 // Stopping timer, if it's event is executing the call blocks me untill it ends
                 StopTimer();
 
