@@ -145,7 +145,7 @@
             this.txtSecondsBetweenTests.Name = "txtSecondsBetweenTests";
             this.txtSecondsBetweenTests.Size = new System.Drawing.Size(92, 20);
             this.txtSecondsBetweenTests.TabIndex = 8;
-            this.txtSecondsBetweenTests.Text = "15";
+            this.txtSecondsBetweenTests.Text = "600";
             // 
             // lblSecondsBetweenPings
             // 
@@ -179,7 +179,7 @@
             this.txtPingPerTest.Name = "txtPingPerTest";
             this.txtPingPerTest.Size = new System.Drawing.Size(92, 20);
             this.txtPingPerTest.TabIndex = 4;
-            this.txtPingPerTest.Text = "5";
+            this.txtPingPerTest.Text = "20";
             // 
             // lblTimeout
             // 
