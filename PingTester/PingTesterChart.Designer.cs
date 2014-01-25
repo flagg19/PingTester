@@ -32,6 +32,7 @@
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
             System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.Title title1 = new System.Windows.Forms.DataVisualization.Charting.Title();
             this.crtResults = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.crtResults)).BeginInit();
             this.SuspendLayout();
@@ -41,6 +42,8 @@
             this.crtResults.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            chartArea1.AxisX.Interval = 1D;
+            chartArea1.AxisX2.Interval = 1D;
             chartArea1.CursorX.AutoScroll = false;
             chartArea1.CursorX.IsUserEnabled = true;
             chartArea1.CursorX.IsUserSelectionEnabled = true;
@@ -55,9 +58,11 @@
             this.crtResults.Name = "crtResults";
             this.crtResults.Padding = new System.Windows.Forms.Padding(5);
             series1.ChartArea = "AvgDevChartArea";
+            series1.IsXValueIndexed = true;
             series1.Legend = "Legend1";
             series1.Name = "Average";
             series2.ChartArea = "AvgDevChartArea";
+            series2.IsXValueIndexed = true;
             series2.Legend = "Legend1";
             series2.Name = "StandardDeviation";
             this.crtResults.Series.Add(series1);
@@ -65,6 +70,10 @@
             this.crtResults.Size = new System.Drawing.Size(900, 484);
             this.crtResults.TabIndex = 0;
             this.crtResults.Text = "Results";
+            title1.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold);
+            title1.Name = "Title";
+            title1.Text = "Title Placeholder";
+            this.crtResults.Titles.Add(title1);
             // 
             // PingTesterChart
             // 

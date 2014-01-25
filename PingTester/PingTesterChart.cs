@@ -19,6 +19,11 @@ namespace PingTester
         {
             InitializeComponent();
             this.results = results;
+            crtResults.Titles["Title"].Text =
+                ((DateTime)results.First().getAvgTime()).ToShortDateString() + " " +
+                ((DateTime)results.First().getAvgTime()).ToShortTimeString() + " <---> " +
+                ((DateTime)results.Last().getAvgTime()).ToShortDateString() + " " +
+                ((DateTime)results.Last().getAvgTime()).ToShortTimeString();
         }
 
         private void PingTesterChart_Load(object sender, EventArgs e)
@@ -33,6 +38,7 @@ namespace PingTester
 
         private void PingTesterChart_Resize(object sender, EventArgs e)
         {
+            // Resizing the chart to match the new size of the form
             crtResults.Size = this.ClientSize;
         }
     }
