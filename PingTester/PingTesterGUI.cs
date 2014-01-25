@@ -142,7 +142,21 @@ namespace PingTester
         private void btnStart_Click(object sender, EventArgs e)
         {
             // Parsing parameters
-            remoteAddr = IPAddress.Parse(txtAddress.Text);
+            
+            // Validating/resolving Ip Address
+            if(!IPAddress.TryParse(txtAddress.Text,out remoteAddr))
+            {
+                try
+                {
+                    remoteAddr = Dns.GetHostEntry(txtAddress.Text).AddressList[0];
+                }
+                catch (Exception)
+                {
+                    MessageBox.Show(Strings.ParseParameterHostError);
+                    return;
+                }
+            }
+
             timeout = Int32.Parse(txtTimeout.Text);
             count = Int32.Parse(txtPingPerTest.Text);
             maxNetworkInterfaceUsagePercentage = Int32.Parse(txtMaxNetworkUsage.Text);
