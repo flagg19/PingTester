@@ -24,9 +24,9 @@ namespace PingService
         // Private vars ping-related
         IPAddress remoteAddr;
         int timeout;
-        int count;
-        int maxNetworkInterfaceUsagePercentage;
-        int secondsBetweenPings;
+        int pingsPerTest;
+        double maxNetworkInterfaceUsagePercentage;
+        double secondsBetweenPings;
         
         // Reference to the network interface that will be used to ping
         NetworkInterface ni;
@@ -42,11 +42,11 @@ namespace PingService
         // Lock used to provide monitor-like accass to this class
         object _lock;
 
-        public PingHelper(IPAddress remoteAddr, int timeout, int count, int maxNetworkInterfaceUsagePercentage, int secondsBetweenPings)
+        public PingHelper(IPAddress remoteAddr, int timeout, int pingsPerTest, double maxNetworkInterfaceUsagePercentage, double secondsBetweenPings)
         {
             this.remoteAddr = remoteAddr;
             this.timeout = timeout;
-            this.count = count;
+            this.pingsPerTest = pingsPerTest;
             this.maxNetworkInterfaceUsagePercentage = maxNetworkInterfaceUsagePercentage;
             this.secondsBetweenPings = secondsBetweenPings;
 
@@ -72,7 +72,7 @@ namespace PingService
                 Ping pingSender = new Ping();
                 PingResult result = new PingResult();
 
-                for (int i = 0; i < count; i++)
+                for (int i = 0; i < pingsPerTest; i++)
                 {
                     if (isStopping == false)
                     {
@@ -117,11 +117,11 @@ namespace PingService
                         }
 
                         // Checking again if anyone asked us to stop and also avoid waiting at the end of the last loop
-                        if (isStopping == false && i < count - 1)
+                        if (isStopping == false && i < pingsPerTest - 1)
                         {
                             // Ok, i've done one single ping, now i should wait the time the user setted before doing it again
                             //System.Threading.Thread.Sleep(secondsBetweenPings * 1000);
-                            Monitor.Wait(_lock, secondsBetweenPings * 1000);
+                            Monitor.Wait(_lock, (int)(secondsBetweenPings * 1000));
                         }
                         else
                         {

@@ -29,10 +29,10 @@ namespace PingTester
         // PingHelper related params
         IPAddress remoteAddr;
         int timeout;
-        int count;
-        int maxNetworkInterfaceUsagePercentage;
-        int secondsBetweenPings;
-        int secondsBetweenTests;
+        int pingsPerTest;
+        double secondsBetweenPings;
+        double secondsBetweenTests;
+        double maxNetworkInterfaceUsagePercentage;
 
         // Form and ping results related vars
         PingHelper ph;
@@ -142,37 +142,57 @@ namespace PingTester
         private void btnStart_Click(object sender, EventArgs e)
         {
             // Parsing parameters
-            remoteAddr = IPAddress.Parse(txtAddress.Text);
-            timeout = Int32.Parse(txtTimeout.Text);
-            count = Int32.Parse(txtPingPerTest.Text);
-            maxNetworkInterfaceUsagePercentage = Int32.Parse(txtMaxNetworkUsage.Text);
-            secondsBetweenPings = Int32.Parse(txtSecondsBetweenPings.Text);
-            secondsBetweenTests = Int32.Parse(txtSecondsBetweenTests.Text) * 1000;
+            string strTimeout = Strings.FormValidationTimeoutError.Replace("_min_", FormInputValidator.timeoutRangeMin.ToString())
+                .Replace("_max_", FormInputValidator.timeoutRangeMax.ToString());
+            string strPingsPerTest = Strings.FormValidationTimeoutError.Replace("_min_", FormInputValidator.pingsPerTestRangeMin.ToString())
+                .Replace("_max_", FormInputValidator.pingsPerTestRangeMax.ToString());
+            string strSecondsBetweenPings = Strings.FormValidationTimeoutError.Replace("_min_", FormInputValidator.secondsBetweenPingsRangeMin.ToString())
+                .Replace("_max_", FormInputValidator.secondsBetweenPingsRangeMax.ToString());
+            string strSecondsBetweenTests = Strings.FormValidationTimeoutError.Replace("_min_", FormInputValidator.secondsBetweenTestsRangeMin.ToString())
+                .Replace("_max_", FormInputValidator.secondsBetweenTestsRangeMax.ToString());
+            string strMaxNetworkInterfaceUsage = Strings.FormValidationTimeoutError.Replace("_min_", FormInputValidator.maxNetworkInterfaceUsageRangeMin.ToString())
+                .Replace("_max_", FormInputValidator.maxNetworkInterfaceUsageRangeMax.ToString());
 
-            // Creating the helper object
-            ph = new PingHelper(remoteAddr, timeout, count, maxNetworkInterfaceUsagePercentage, secondsBetweenPings);
-            results = new List<PingResult>();
+            bool validationCheck = true;
+            validationCheck = validationCheck
+                & FormInputValidator.validateHost(txtAddress, Strings.FormValidationAddressError, erpInputs, out remoteAddr)
+                & FormInputValidator.validateTimeout(txtTimeout, strTimeout, erpInputs, out timeout)
+                & FormInputValidator.validatePingsPerTest(txtPingPerTest, strPingsPerTest, erpInputs, out pingsPerTest)
+                & FormInputValidator.validateSecondsBetweenPings(txtSecondsBetweenPings, strSecondsBetweenPings, erpInputs, out secondsBetweenPings)
+                & FormInputValidator.validateSecondsBetweenTests(txtSecondsBetweenTests, strSecondsBetweenTests, erpInputs, out secondsBetweenTests)
+                & FormInputValidator.validateMaxNetworkInterfaceUsage(txtMaxNetworkUsage, strMaxNetworkInterfaceUsage, erpInputs, out maxNetworkInterfaceUsagePercentage);
 
-            // Create and setup the timer that will start the test every *user given* time
-            timerDead.Reset();
-            timer = new System.Timers.Timer();
-            timer.AutoReset = false;
-            timer.Interval = secondsBetweenTests;
-            timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
-            //timer.Start();
-            /*
-             * Workaround the problem that i need the event to be first fired as soon as i start the timer, not after its first
-             * period. But calling its event from the main thread it's not possible due to the locking problem that may occur
-             * if the user tries stops the execution during the first test session. 
-             * To simulate the situation that we will have during all but the first test session, i call the timer_Elapsed(..)
-             * event in a new thread. Performance is not the focus of this app, correctness is.
-             */
-            Task.Factory.StartNew(() =>
+            if (validationCheck)
             {
-                timer_Elapsed(this, null);
-            });
+                // Creating the helper object
+                ph = new PingHelper(remoteAddr, timeout, pingsPerTest, maxNetworkInterfaceUsagePercentage, secondsBetweenPings);
+                results = new List<PingResult>();
 
-            AdjustGUIToStatus(PingTesterGUIStatus.AfterStart);
+                // Create and setup the timer that will start the test every *user given* time
+                timerDead.Reset();
+                timer = new System.Timers.Timer();
+                timer.AutoReset = false;
+                timer.Interval = (double)secondsBetweenTests;
+                timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
+                //timer.Start();
+                /*
+                 * Workaround the problem that i need the event to be first fired as soon as i start the timer, not after its first
+                 * period. But calling its event from the main thread it's not possible due to the locking problem that may occur
+                 * if the user tries stops the execution during the first test session. 
+                 * To simulate the situation that we will have during all but the first test session, i call the timer_Elapsed(..)
+                 * event in a new thread. Performance is not the focus of this app, correctness is.
+                 */
+                Task.Factory.StartNew(() =>
+                {
+                    timer_Elapsed(this, null);
+                });
+
+                AdjustGUIToStatus(PingTesterGUIStatus.AfterStart);
+            }
+            else
+            {
+                MessageBox.Show(Strings.FormValidationError);
+            }
         }
 
         private void btnStop_Click(object sender, EventArgs e)

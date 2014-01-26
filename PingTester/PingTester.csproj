@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormInputValidator.cs" />
     <Compile Include="PingTesterChart.cs">
       <SubType>Form</SubType>
     </Compile>

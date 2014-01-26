@@ -49,12 +49,14 @@
             this.txtAddress = new System.Windows.Forms.TextBox();
             this.ntfPingTesterTray = new System.Windows.Forms.NotifyIcon(this.components);
             this.btnImport = new System.Windows.Forms.Button();
+            this.erpInputs = new System.Windows.Forms.ErrorProvider(this.components);
             this.grpInputs.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.erpInputs)).BeginInit();
             this.SuspendLayout();
             // 
             // btnStart
             // 
-            this.btnStart.Location = new System.Drawing.Point(254, 29);
+            this.btnStart.Location = new System.Drawing.Point(268, 29);
             this.btnStart.Name = "btnStart";
             this.btnStart.Size = new System.Drawing.Size(75, 23);
             this.btnStart.TabIndex = 0;
@@ -64,7 +66,7 @@
             // 
             // btnStop
             // 
-            this.btnStop.Location = new System.Drawing.Point(254, 58);
+            this.btnStop.Location = new System.Drawing.Point(268, 58);
             this.btnStop.Name = "btnStop";
             this.btnStop.Size = new System.Drawing.Size(75, 23);
             this.btnStop.TabIndex = 1;
@@ -74,7 +76,7 @@
             // 
             // btnChart
             // 
-            this.btnChart.Location = new System.Drawing.Point(254, 87);
+            this.btnChart.Location = new System.Drawing.Point(268, 87);
             this.btnChart.Name = "btnChart";
             this.btnChart.Size = new System.Drawing.Size(75, 23);
             this.btnChart.TabIndex = 2;
@@ -84,7 +86,7 @@
             // 
             // btnExport
             // 
-            this.btnExport.Location = new System.Drawing.Point(254, 159);
+            this.btnExport.Location = new System.Drawing.Point(268, 159);
             this.btnExport.Name = "btnExport";
             this.btnExport.Size = new System.Drawing.Size(75, 23);
             this.btnExport.TabIndex = 3;
@@ -108,7 +110,7 @@
             this.grpInputs.Controls.Add(this.txtAddress);
             this.grpInputs.Location = new System.Drawing.Point(12, 12);
             this.grpInputs.Name = "grpInputs";
-            this.grpInputs.Size = new System.Drawing.Size(236, 179);
+            this.grpInputs.Size = new System.Drawing.Size(250, 179);
             this.grpInputs.TabIndex = 4;
             this.grpInputs.TabStop = false;
             this.grpInputs.Text = "Inputs";
@@ -227,7 +229,7 @@
             // 
             // btnImport
             // 
-            this.btnImport.Location = new System.Drawing.Point(254, 130);
+            this.btnImport.Location = new System.Drawing.Point(268, 130);
             this.btnImport.Name = "btnImport";
             this.btnImport.Size = new System.Drawing.Size(75, 23);
             this.btnImport.TabIndex = 5;
@@ -235,11 +237,15 @@
             this.btnImport.UseVisualStyleBackColor = true;
             this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
+            // erpInputs
+            // 
+            this.erpInputs.ContainerControl = this;
+            // 
             // PingTester
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(340, 202);
+            this.ClientSize = new System.Drawing.Size(354, 202);
             this.Controls.Add(this.btnImport);
             this.Controls.Add(this.grpInputs);
             this.Controls.Add(this.btnExport);
@@ -254,6 +260,7 @@
             this.Resize += new System.EventHandler(this.PingTester_Resize);
             this.grpInputs.ResumeLayout(false);
             this.grpInputs.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.erpInputs)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -279,6 +286,7 @@
         private System.Windows.Forms.TextBox txtAddress;
         private System.Windows.Forms.NotifyIcon ntfPingTesterTray;
         private System.Windows.Forms.Button btnImport;
+        private System.Windows.Forms.ErrorProvider erpInputs;
     }
 }
 
