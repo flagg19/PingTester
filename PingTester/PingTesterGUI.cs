@@ -172,7 +172,7 @@ namespace PingTester
                 timerDead.Reset();
                 timer = new System.Timers.Timer();
                 timer.AutoReset = false;
-                timer.Interval = (double)secondsBetweenTests;
+                timer.Interval = (double)secondsBetweenTests*1000;
                 timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
                 //timer.Start();
                 /*
