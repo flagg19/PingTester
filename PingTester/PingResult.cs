@@ -96,7 +96,7 @@ namespace PingService
         public double? getAvg()
         {
             // Calculating avg if not yet calculated
-            if (avg == null && results.Count() > 0)
+            if (avg == null && results.Where(res => res.Status == PingResultEntryStatus.Success).Count() > 0)
             {
                 avg = new double?(0);
                 int cont = 0;
@@ -116,7 +116,7 @@ namespace PingService
         public double? getDev()
         {
             // Calculating dev if not yet calculated
-            if (dev == null && results.Count() > 0)
+            if (dev == null && results.Where(res => res.Status == PingResultEntryStatus.Success).Count() > 0)
             {
                 double? tmpAvg = this.getAvg();
                 if (tmpAvg != null)
@@ -141,7 +141,7 @@ namespace PingService
         public double? getMax()
         {
             // Calculating max if not yet calculated
-            if (max == null && results.Count() > 0)
+            if (max == null && results.Where(res => res.Status == PingResultEntryStatus.Success).Count() > 0)
             {
                 max = results.Where(x => x.Status == PingResultEntryStatus.Success).OrderBy(y => y.Rtt).Last().Rtt;
             }
@@ -151,7 +151,7 @@ namespace PingService
         public double? getMin()
         {
             // Calculating min if not yet calculated
-            if (min == null && results.Count() > 0)
+            if (min == null && results.Where(res => res.Status == PingResultEntryStatus.Success).Count() > 0)
             {
                 min = results.Where(x => x.Status == PingResultEntryStatus.Success).OrderBy(y => y.Rtt).First().Rtt;
             }
