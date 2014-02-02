@@ -50,17 +50,9 @@ namespace PingService
             this.maxNetworkInterfaceUsagePercentage = maxNetworkInterfaceUsagePercentage;
             this.secondsBetweenPings = secondsBetweenPings;
 
-            // Trying to get the reference to the network interface
-            this.ni = getNetworkInterface();
-            // If it fails no need for performance counters 'cause we wont be able to use them
-            if (ni != null)
-            {
-                bandwidthCounter = new PerformanceCounter("Network Interface", "Current Bandwidth", ni.Description);
-                dataSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", ni.Description);
-                dataReceivedCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", ni.Description);
-            }
-
             _lock = new object();
+
+            this.ni = getNetworkInterface();
         }
 
         public PingResult TestPing()
@@ -150,14 +142,32 @@ namespace PingService
         // Check if network bandwith usage % is lower (or not) then the value given by the user
         private CheckNetworkUsageStatus checkNetworkUsage()
         {
-            // If it has been possible to get the informations about the network interface...
-            if (ni != null && bandwidthCounter != null && dataSentCounter != null && dataReceivedCounter != null)
+            // If it we can't get a ref to the network interface there will be no need for performance counters 'cause we wont be able to use them
+            if (ni != null && bandwidthCounter == null && dataSentCounter == null && dataReceivedCounter == null)
+            {
+                try
+                {
+                    bandwidthCounter = new PerformanceCounter("Network Interface", "Current Bandwidth", ni.Description);
+                    dataSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", ni.Description);
+                    dataReceivedCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", ni.Description);
+                }
+                catch
+                {
+                    // Not sure what to do here
+                }
+            }
+
+            // If we have successfully created the performance counters
+            if (bandwidthCounter != null && dataSentCounter != null && dataReceivedCounter != null)
             {
                 // Do the check...
-                return (getNetworkUtilization() < maxNetworkInterfaceUsagePercentage) ? CheckNetworkUsageStatus.Good : CheckNetworkUsageStatus.Crowded;
+                return (getNetworkUtilization() < maxNetworkInterfaceUsagePercentage)
+                    ? CheckNetworkUsageStatus.Good
+                    : CheckNetworkUsageStatus.Crowded;
             }
             else
             {
+                // If not, we can't test
                 return CheckNetworkUsageStatus.UnableToTest;
             }
             
@@ -185,7 +195,6 @@ namespace PingService
             }
             return null;
         }
-
 
         /* 
          * As suggested somewhere on stackoverflow.com, this function use the infos provided by the performance counters
