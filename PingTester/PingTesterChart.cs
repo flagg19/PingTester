@@ -28,11 +28,27 @@ namespace PingTester
 
         private void PingTesterChart_Load(object sender, EventArgs e)
         {
-            // For each (meaningful) result, add it to the chart
-            foreach (PingResult res in results.Where(x => x.getAvg() != null && x.getAvgTime() != null && x.getDev() != null))
+            // Add each result to the chart
+            foreach (PingResult res in results)
             {
-                crtResults.Series["Average"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getAvg());
-                crtResults.Series["StandardDeviation"].Points.AddXY(((DateTime)res.getAvgTime()).ToShortTimeString(), res.getDev());
+                string tmpXValue = ((DateTime)res.getAvgTime()).ToShortTimeString();
+                double? tmpYAvgValue = res.getAvg();
+                double? tmpYDevValue = res.getDev();
+
+                /* 
+                 * If avg is null, it means that not even one of the pings of the corrent result has been completed successfully.
+                 * If so, we consider the whole test failed and we mark it with a "*", just filtering them away it's bad because
+                 * the fact that thay failed is meaningful. It's of no use checking for dev too 'cause avg = null --> dev = null. 
+                 */
+                if (tmpYAvgValue == null)
+                {
+                    tmpXValue += "*";
+                    tmpYAvgValue = 0;
+                    tmpYDevValue = 0;
+                }
+
+                crtResults.Series["Average"].Points.AddXY(tmpXValue, tmpYAvgValue);
+                crtResults.Series["StandardDeviation"].Points.AddXY(tmpXValue, tmpYDevValue);
             }
         }
 
