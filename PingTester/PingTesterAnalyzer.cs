@@ -57,7 +57,7 @@ namespace PingTester
 
             int count = 0;
             // Add each result to the chart
-            foreach (AggregatedResult res in results[day])
+            foreach (AggregatedResult res in results[day].OrderBy(x => x.Hour))
             {
                 count += res.GetDayCount();
                 string tmpXValue = res.Hour.ToString();
