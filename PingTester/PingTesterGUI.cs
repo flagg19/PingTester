@@ -197,26 +197,30 @@ namespace PingTester
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            // Setting the GUI to "don't touch anything please, i'm stopping"
-            AdjustGUIToStatus(PingTesterGUIStatus.AfterStop);
-
-            // Executing potentially blocking operation in a new thread to prevent GUI freez
-            Task.Factory.StartNew(() =>
+            DialogResult dialogResult = MessageBox.Show(Strings.StopWarningTitle, Strings.GenericWarningTitle, MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
             {
-                // Signaling to skip any remaining scheduled pings, can block if a ping is executing
-                // Max block time is ping timeout
-                ph.SkipRemainingPingsOnce();
+                // Setting the GUI to "don't touch anything please, i'm stopping"
+                AdjustGUIToStatus(PingTesterGUIStatus.AfterStop);
 
-                // Stopping timer, if it's event is executing the call blocks me untill it ends
-                StopTimer();
-
-                // We should update the GUI but we are not the GUI thread so we need to invoke
-                MethodInvoker del = () =>
+                // Executing potentially blocking operation in a new thread to prevent GUI freez
+                Task.Factory.StartNew(() =>
                 {
-                    ((PingTester)grpInputs.FindForm()).AdjustGUIToStatus(PingTesterGUIStatus.AfterLaunch);
-                };
-                grpInputs.BeginInvoke(del);
-            });
+                    // Signaling to skip any remaining scheduled pings, can block if a ping is executing
+                    // Max block time is ping timeout
+                    ph.SkipRemainingPingsOnce();
+
+                    // Stopping timer, if it's event is executing the call blocks me untill it ends
+                    StopTimer();
+
+                    // We should update the GUI but we are not the GUI thread so we need to invoke
+                    MethodInvoker del = () =>
+                    {
+                        ((PingTester)grpInputs.FindForm()).AdjustGUIToStatus(PingTesterGUIStatus.AfterLaunch);
+                    };
+                    grpInputs.BeginInvoke(del);
+                });
+            }
         }
 
         private void btnChart_Click(object sender, EventArgs e)
@@ -266,7 +270,7 @@ namespace PingTester
         {
             SaveFileDialog dialog = new SaveFileDialog();
             // Suggesting file name based on time
-            dialog.FileName = DateTime.Now.ToString("d.M.yyyy-HH.mm.ss") + ".bin";
+            dialog.FileName = DateTime.Now.ToString("d.M.yyyy-HH.mm.ss") + ".ptf";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 if (results != null && results.Count() > 0)
@@ -281,6 +285,37 @@ namespace PingTester
                 {
                     MessageBox.Show(Strings.ExportError);
                 }
+            }
+        }
+
+        private void btnAnalyze_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Multiselect = true;
+            dialog.Filter = "Ping Tester Files (*.ptf)|*.ptf";
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                List<List<PingResult>> lol = new List<List<PingResult>>();
+                BinaryFormatter formatter = new BinaryFormatter();
+                // Try to deserialize each file
+                foreach (String file in dialog.FileNames)
+                {
+                    try
+                    {
+                        FileStream stream = File.OpenRead(file);
+                        lol.Add((List<PingResult>)formatter.Deserialize(stream));
+                        stream.Close();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Dunno...
+                    }
+                }
+
+                // Opening the chart form
+                PingTesterAnalyzer analyzerForm = new PingTesterAnalyzer(PingResult.AggregatePingResults(lol));
+                analyzerForm.Show();
             }
         }
 
@@ -314,6 +349,5 @@ namespace PingTester
         }
 
         #endregion
-
     }
 }

@@ -16,7 +16,9 @@ namespace PingTester
         public const string ImportWarningMessage = "Current data will be overwritten by file data, continue?";
         public const string ChartError = "No data to be charted yet.";
         public const string GenericWarningTitle = "Warning!";
+        public const string AnalyzerChartTitle = "The number of days tested is about:";
         public const string ExportError = "No data to be exported yet.";
+        public const string StopWarningTitle = "Are you sure you want to stop?";
 
         public const string FormValidationAddressError = "Must be a valid Ip or existing hostname.";
         public const string FormValidationTimeoutError = "Must be an integer number in range: (_min_;_max_).";

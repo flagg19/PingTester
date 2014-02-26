@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PingTester;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.NetworkInformation;
@@ -166,6 +167,34 @@ namespace PingService
                 avgTime = new DateTime((results.First().Time.Ticks + results.Last().Time.Ticks) / 2);
             }
             return avgTime;
+        }
+
+        // Group all the given PingResults by days (mon-sun) and convert them in AggregatedResults, which are grouped by hours (0..24)
+        public static Dictionary<DayOfWeek, List<AggregatedResult>> AggregatePingResults(List<List<PingResult>> toBeMerged)
+        {
+            // Flattening the list of lists
+            List<PingResult> allResults = toBeMerged.SelectMany(x => x).Where(x => x.avg != null).ToList();
+
+            // Prepare a new list where to put the aggregated results we are about to calculate
+            Dictionary<DayOfWeek, List<AggregatedResult>> output = new Dictionary<DayOfWeek, List<AggregatedResult>>();
+
+            // Grouping by days
+            IEnumerable<IGrouping<DayOfWeek, PingResult>> groupedByDay = allResults.GroupBy(x => x.avgTime.Value.DayOfWeek);
+            foreach (IGrouping<DayOfWeek, PingResult> dayGroup in groupedByDay)
+            {
+                // Prepare a new list where to put the aggregated results we are about to calculate
+                List<AggregatedResult> tmp = new List<AggregatedResult>();
+
+                // Grouping by hours
+                IEnumerable<IGrouping<int, PingResult>> groupedByHour = dayGroup.GroupBy(x => x.avgTime.Value.Hour);
+                foreach (IGrouping<int, PingResult> hourGroup in groupedByHour)
+                {
+                    tmp.Add(new AggregatedResult(hourGroup.ToList(), hourGroup.Key));
+                }
+
+                output.Add(dayGroup.Key, tmp);
+            }
+            return output;
         }
     }
 }
