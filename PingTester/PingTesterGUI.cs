@@ -297,22 +297,33 @@ namespace PingTester
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 List<List<PingResult>> lol = new List<List<PingResult>>();
-                BinaryFormatter formatter = new BinaryFormatter();
-                // Try to deserialize each file
+                // Try to deserialize the files (using a Task for each one, to speed up things...)
+                List<Task> tasks = new List<Task>();
                 foreach (String file in dialog.FileNames)
                 {
-                    try
-                    {
-                        FileStream stream = File.OpenRead(file);
-                        lol.Add((List<PingResult>)formatter.Deserialize(stream));
-                        stream.Close();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Dunno...
-                    }
+                    tasks.Add(Task.Factory.StartNew(() =>
+                        {
+                            try
+                            {
+                                FileStream stream = File.OpenRead(file);
+                                BinaryFormatter formatter = new BinaryFormatter();
+                                List<PingResult> temp = (List<PingResult>)formatter.Deserialize(stream);
+                                stream.Close();
+                                // No need for "complex" syncronization logic, just be sure not to add things to the shared list at the same time
+                                lock (lol)
+                                {
+                                    lol.Add(temp);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                // Dunno...
+                            }
+                        }
+                    ));
                 }
-
+                // Wait for all tasks to complete
+                Task.WaitAll(tasks.ToArray());
                 // Opening the chart form
                 PingTesterAnalyzer analyzerForm = new PingTesterAnalyzer(PingResult.AggregatePingResults(lol));
                 analyzerForm.Show();
