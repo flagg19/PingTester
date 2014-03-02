@@ -224,9 +224,10 @@
             this.ntfPingTesterTray.BalloonTipText = "PingTester is still runnig in background.";
             this.ntfPingTesterTray.BalloonTipTitle = "Look here please!";
             this.ntfPingTesterTray.Icon = ((System.Drawing.Icon)(resources.GetObject("ntfPingTesterTray.Icon")));
+            this.ntfPingTesterTray.Tag = "";
             this.ntfPingTesterTray.Text = "PingTesterTray";
             this.ntfPingTesterTray.Visible = true;
-            this.ntfPingTesterTray.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ntfPingTesterTray_MouseDoubleClick);
+            this.ntfPingTesterTray.MouseClick += new System.Windows.Forms.MouseEventHandler(this.ntfPingTesterTray_MouseClick);
             // 
             // btnImport
             // 

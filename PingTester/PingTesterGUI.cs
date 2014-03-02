@@ -54,6 +54,9 @@ namespace PingTester
             timerDead = new ManualResetEvent(false);
 
             AdjustGUIToStatus(PingTesterGUIStatus.AfterLaunch);
+
+            // Used to show the baloon tip only the first time the app is minimized
+            ntfPingTesterTray.Tag = null;
         }
 
         // Takes care of the GUI, given the execution state
@@ -347,12 +350,17 @@ namespace PingTester
             if (FormWindowState.Minimized == this.WindowState)
             {
                 ntfPingTesterTray.Visible = true;
-                ntfPingTesterTray.ShowBalloonTip(3000);
                 this.ShowInTaskbar = false;
+                // Check if the baloon should be shown
+                if (ntfPingTesterTray.Tag == null)
+                {
+                    ntfPingTesterTray.Tag = new object();
+                    ntfPingTesterTray.ShowBalloonTip(1000);
+                }
             }
         }
 
-        private void ntfPingTesterTray_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void ntfPingTesterTray_MouseClick(object sender, MouseEventArgs e)
         {
             this.WindowState = FormWindowState.Normal;
             this.ShowInTaskbar = true;
