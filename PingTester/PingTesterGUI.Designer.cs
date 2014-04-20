@@ -216,7 +216,7 @@
             this.txtAddress.Name = "txtAddress";
             this.txtAddress.Size = new System.Drawing.Size(92, 20);
             this.txtAddress.TabIndex = 0;
-            this.txtAddress.Text = "192.168.100.1";
+            this.txtAddress.Text = "8.8.8.8";
             // 
             // ntfPingTesterTray
             // 
